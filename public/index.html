@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cloud Basics with Node.js</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; }
+    input, button { margin: 8px 0; padding: 8px; }
+    pre { background: #f7f7f7; padding: 12px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>Simple Cloud List (Node.js)</h1>
+
+  <h2>Add Item</h2>
+  <form id="addForm">
+    <input type="text" id="name" placeholder="Name" required />
+    <input type="number" id="number" placeholder="Number" required />
+    <button type="submit">Add</button>
+  </form>
+  <p id="status"></p>
+
+  <h2>Saved List</h2>
+  <button id="refreshBtn">Refresh List</button>
+  <pre id="listOutput">[]</pre>
+
+  <script>
+    const form = document.getElementById('addForm');
+    const status = document.getElementById('status');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const listOutput = document.getElementById('listOutput');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const number = document.getElementById('number').value;
+
+      const res = await fetch('/api/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, number })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        status.textContent = 'Added: ' + JSON.stringify(data.item);
+        form.reset();
+        refreshList();
+      } else {
+        status.textContent = data.error || 'Error adding item';
+      }
+    });
+
+    async function refreshList() {
+      const res = await fetch('/api/list');
+      const data = await res.json();
+      listOutput.textContent = JSON.stringify(data, null, 2);
+    }
+
+    refreshBtn.addEventListener('click', refreshList);
+    refreshList();
+  </script>
+</body>
+</html>
